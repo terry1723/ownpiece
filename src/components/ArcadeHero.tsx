@@ -2,43 +2,31 @@
 
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
+import PullAnimationOverlay, { PullMachine } from './PullAnimationOverlay';
 
 const NAV_ITEMS = ['HOME', 'PULL', 'PACKS', 'COLLECTION', 'LEADERBOARD', 'REWARDS', 'HOW IT WORKS'];
 
-const MACHINES = [
-  {
-    key: 'rookie',
-    name: 'Rookie Machine',
-    price: '49 OP',
-    machine: '/assets/rookie-machine.png',
-    pack: '/assets/rookie-pack.png',
-    glow: '0 0 38px rgba(249,115,22,0.55)',
-  },
-  {
-    key: 'pro',
-    name: 'Pro Machine',
-    price: '99 OP',
-    machine: '/assets/pro-machine.png',
-    pack: '/assets/pro-pack.png',
-    glow: '0 0 42px rgba(59,130,246,0.65)',
-  },
-  {
-    key: 'allstar',
-    name: 'All-Star Machine',
-    price: '199 OP',
-    machine: '/assets/allstar-machine.png',
-    pack: '/assets/allstar-pack.png',
-    glow: '0 0 38px rgba(239,68,68,0.55)',
-  },
-] as const;
+const MACHINES: PullMachine[] = [
+  { key: 'rookie', name: 'Rookie Machine', price: '49 OP', machine: '/assets/rookie-machine.png', pack: '/assets/rookie-pack.png' },
+  { key: 'pro', name: 'Pro Machine', price: '99 OP', machine: '/assets/pro-machine.png', pack: '/assets/pro-pack.png' },
+  { key: 'allstar', name: 'All-Star Machine', price: '199 OP', machine: '/assets/allstar-machine.png', pack: '/assets/allstar-pack.png' },
+];
 
 export default function ArcadeHero() {
   const [selectedKey, setSelectedKey] = useState<'rookie' | 'pro' | 'allstar'>('pro');
+  const [open, setOpen] = useState(false);
+
+  const selectedMachine = MACHINES.find((m) => m.key === selectedKey) ?? MACHINES[1];
 
   const trust = useMemo(
     () => ['100% GRADED CARDS', 'PSA / BGS / CGC / SGC', "SECURED BY Brink's", 'Temperature-controlled vault storage'],
     [],
   );
+
+  const openOverlay = (machineKey: 'rookie' | 'pro' | 'allstar') => {
+    setSelectedKey(machineKey);
+    setOpen(true);
+  };
 
   return (
     <section className="relative min-h-screen overflow-hidden">
@@ -51,9 +39,7 @@ export default function ArcadeHero() {
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <span className="text-lg font-black tracking-[0.2em]">OWN PIECE</span>
           <ul className="hidden gap-4 text-[11px] tracking-[0.15em] text-white/80 lg:flex">
-            {NAV_ITEMS.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
+            {NAV_ITEMS.map((item) => <li key={item}>{item}</li>)}
           </ul>
           <div className="flex items-center gap-2">
             <span className="hidden rounded-full border border-white/20 bg-black/40 px-3 py-1 text-xs md:inline">OP 1,240</span>
@@ -72,6 +58,13 @@ export default function ArcadeHero() {
         <div className="mt-8 flex snap-x gap-4 overflow-x-auto pb-4 md:justify-center">
           {MACHINES.map((m) => {
             const active = selectedKey === m.key;
+            const glow =
+              m.key === 'rookie'
+                ? '0 0 38px rgba(249,115,22,0.55)'
+                : m.key === 'pro'
+                ? '0 0 42px rgba(59,130,246,0.65)'
+                : '0 0 38px rgba(239,68,68,0.55)';
+
             return (
               <article
                 key={m.key}
@@ -82,7 +75,7 @@ export default function ArcadeHero() {
                 className={`relative w-[290px] shrink-0 snap-center rounded-3xl border p-4 text-left backdrop-blur-lg transition ${
                   active ? 'scale-105 border-white/60 bg-white/10' : 'border-white/20 bg-black/40'
                 }`}
-                style={{ boxShadow: m.glow }}
+                style={{ boxShadow: glow }}
               >
                 <p className="text-xs uppercase tracking-[0.2em] text-white/70">{m.name}</p>
                 <p className="mt-1 text-3xl font-black text-white">{m.price}</p>
@@ -93,23 +86,31 @@ export default function ArcadeHero() {
                 <Image src={m.machine} alt={m.name} width={280} height={360} className="mx-auto mt-3 h-[260px] w-auto object-contain" />
                 <Image src={m.pack} alt={`${m.name} pack`} width={92} height={124} className="absolute bottom-5 right-3" />
 
-                <span className="mt-3 inline-block rounded-full border border-amber-300/80 bg-amber-500/30 px-3 py-1 text-xs font-semibold">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openOverlay(m.key);
+                  }}
+                  className="mt-3 inline-block rounded-full border border-amber-300/80 bg-amber-500/30 px-3 py-1 text-xs font-semibold"
+                >
                   INSERT COIN
-                </span>
+                </button>
               </article>
             );
           })}
         </div>
 
         <div className="mt-4 flex flex-col items-center gap-3">
-          <button className="rounded-full border border-amber-300/80 bg-gradient-to-r from-amber-500 to-orange-500 px-10 py-4 text-base font-black tracking-[0.2em] text-black">
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-full border border-amber-300/80 bg-gradient-to-r from-amber-500 to-orange-500 px-10 py-4 text-base font-black tracking-[0.2em] text-black"
+          >
             START PULLING NOW
           </button>
+
           <div className="grid w-full max-w-5xl gap-2 text-center text-xs md:grid-cols-4">
             {trust.map((item) => (
-              <p key={item} className="rounded-full border border-white/20 bg-black/40 px-3 py-2">
-                {item}
-              </p>
+              <p key={item} className="rounded-full border border-white/20 bg-black/40 px-3 py-2">{item}</p>
             ))}
           </div>
         </div>
@@ -122,6 +123,8 @@ export default function ArcadeHero() {
         height={420}
         className="pointer-events-none absolute bottom-0 left-1/2 z-10 h-auto w-full max-w-[1600px] -translate-x-1/2 opacity-20 md:opacity-30"
       />
+
+      <PullAnimationOverlay open={open} machine={selectedMachine} onClose={() => setOpen(false)} />
     </section>
   );
 }
