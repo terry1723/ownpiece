@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #030711;
+  --panel: rgba(8, 13, 28, 0.72);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #13213c 0%, #050913 35%, #02040b 100%);
+  color: #eef2ff;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.neon-text {
+  text-shadow: 0 0 24px rgba(59, 130, 246, 0.55), 0 0 45px rgba(251, 146, 60, 0.25);
+}
